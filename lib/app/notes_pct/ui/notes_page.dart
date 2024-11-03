@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:to_do_list_pct/app/app_colors.dart';
 import 'package:to_do_list_pct/app/data_base_impl.dart';
 import 'package:to_do_list_pct/app/notes_pct/interactors/note_entity.dart';
 import 'package:to_do_list_pct/app/notes_pct/interactors/note_states.dart';
 import 'package:to_do_list_pct/app/notes_pct/interactors/note_store.dart';
 import 'package:to_do_list_pct/app/notes_pct/ui/dialogs/add_note_dialog.dart';
-import 'package:to_do_list_pct/app/notes_pct/ui/dialogs/edit_note_dialog.dart';
-import 'package:to_do_list_pct/app/app_colors.dart';
+import 'package:to_do_list_pct/app/notes_pct/ui/notes_list_widget.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -98,7 +97,10 @@ class _NotesPageState extends State<NotesPage> {
                         child = SizedBox(
                             height: MediaQuery.of(context).size.height * .7,
                             width: MediaQuery.of(context).size.width * .9,
-                            child: notesListWidget());
+                            child: NotesListWidget(
+                              list: state.notesList,
+                              store: store,
+                            ));
                       }
                     }
                     return child;
@@ -124,88 +126,88 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
-  ReorderableListView notesListWidget() {
-    return ReorderableListView.builder(
-        itemCount: notesList.length,
-        onReorder: ((oldIndex, newIndex) {
-          setState(() {
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
-            }
-            final item = notesList.removeAt(oldIndex);
-            notesList.insert(newIndex, item);
-          });
-          store.saveNoteList(noteList: notesList);
-        }),
-        itemBuilder: (BuildContext context, index) {
-          return Slidable(
-            key: Key('$index'),
-            startActionPane: ActionPane(
-              motion: const DrawerMotion(),
-              closeThreshold: 0.1,
-              openThreshold: 0.1,
-              children: [
-                SlidableAction(
-                  onPressed: (context) async {
-                    await store.deleteNote(note: notesList[index]);
-                  },
-                  backgroundColor: const Color(0xFFFE4A49),
-                  foregroundColor: Colors.white,
-                  icon: Icons.delete,
-                  label: 'Delete',
-                  borderRadius: BorderRadius.circular(15),
-                  padding: const EdgeInsets.all(8),
-                ),
-                SlidableAction(
-                  onPressed: (context) async {
-                    await editNoteDialog(
-                        context: context, note: notesList[index], store: store);
-                  },
-                  backgroundColor: const Color(0xFF21B7CA),
-                  foregroundColor: Colors.white,
-                  icon: Icons.edit,
-                  label: 'Edit',
-                  borderRadius: BorderRadius.circular(15),
-                  padding: const EdgeInsets.all(8),
-                ),
-              ],
-            ),
-            child: Card(
-              key: Key('$index'),
-              shape: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      width: notesList[index].check ? 4 : 2,
-                      color: notesList[index].check
-                          ? MyColors().paletteColor1
-                          : MyColors().titleColor),
-                  borderRadius: BorderRadius.circular(12)),
-              color: notesList[index].check
-                  ? const Color.fromARGB(255, 65, 126, 224)
-                  : const Color.fromARGB(255, 14, 35, 104),
-              child: CheckboxListTile(
-                value: notesList[index].check,
-                onChanged: (v) async {
-                  Note editedNote = Note.copyWith(
-                      id: notesList[index].id,
-                      title: notesList[index].title,
-                      description: notesList[index].description,
-                      check: !notesList[index].check);
-                  await store.saveNote(note: editedNote);
-                },
-                title: Text(notesList[index].title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: notesList[index].check
-                            ? Colors.black
-                            : MyColors().titleColor)),
-                subtitle: Text(notesList[index].description ?? '',
-                    style: TextStyle(
-                        color: notesList[index].check
-                            ? Colors.black
-                            : MyColors().titleColor)),
-              ),
-            ),
-          );
-        });
-  }
+  // ReorderableListView notesListWidget({required List<Note> notesList}) {
+  //   return ReorderableListView.builder(
+  //       itemCount: notesList.length,
+  //       onReorder: ((oldIndex, newIndex) {
+  //         setState(() {
+  //           if (oldIndex < newIndex) {
+  //             newIndex -= 1;
+  //           }
+  //           final item = notesList.removeAt(oldIndex);
+  //           notesList.insert(newIndex, item);
+  //         });
+  //         store.saveNoteList(noteList: notesList);
+  //       }),
+  //       itemBuilder: (BuildContext context, index) {
+  //         return Slidable(
+  //           key: Key('$index'),
+  //           startActionPane: ActionPane(
+  //             motion: const DrawerMotion(),
+  //             closeThreshold: 0.1,
+  //             openThreshold: 0.1,
+  //             children: [
+  //               SlidableAction(
+  //                 onPressed: (context) async {
+  //                   await store.deleteNote(note: notesList[index]);
+  //                 },
+  //                 backgroundColor: const Color(0xFFFE4A49),
+  //                 foregroundColor: Colors.white,
+  //                 icon: Icons.delete,
+  //                 label: 'Delete',
+  //                 borderRadius: BorderRadius.circular(15),
+  //                 padding: const EdgeInsets.all(8),
+  //               ),
+  //               SlidableAction(
+  //                 onPressed: (context) async {
+  //                   await editNoteDialog(
+  //                       context: context, note: notesList[index], store: store);
+  //                 },
+  //                 backgroundColor: const Color(0xFF21B7CA),
+  //                 foregroundColor: Colors.white,
+  //                 icon: Icons.edit,
+  //                 label: 'Edit',
+  //                 borderRadius: BorderRadius.circular(15),
+  //                 padding: const EdgeInsets.all(8),
+  //               ),
+  //             ],
+  //           ),
+  //           child: Card(
+  //             key: Key('$index'),
+  //             shape: OutlineInputBorder(
+  //                 borderSide: BorderSide(
+  //                     width: notesList[index].check ? 4 : 2,
+  //                     color: notesList[index].check
+  //                         ? MyColors().paletteColor1
+  //                         : MyColors().titleColor),
+  //                 borderRadius: BorderRadius.circular(12)),
+  //             color: notesList[index].check
+  //                 ? const Color.fromARGB(255, 65, 126, 224)
+  //                 : const Color.fromARGB(255, 14, 35, 104),
+  //             child: CheckboxListTile(
+  //               value: notesList[index].check,
+  //               onChanged: (v) async {
+  //                 Note editedNote = Note.copyWith(
+  //                     id: notesList[index].id,
+  //                     title: notesList[index].title,
+  //                     description: notesList[index].description,
+  //                     check: !notesList[index].check);
+  //                 await store.saveNote(note: editedNote);
+  //               },
+  //               title: Text(notesList[index].title,
+  //                   style: TextStyle(
+  //                       fontWeight: FontWeight.bold,
+  //                       color: notesList[index].check
+  //                           ? Colors.black
+  //                           : MyColors().titleColor)),
+  //               subtitle: Text(notesList[index].description ?? '',
+  //                   style: TextStyle(
+  //                       color: notesList[index].check
+  //                           ? Colors.black
+  //                           : MyColors().titleColor)),
+  //             ),
+  //           ),
+  //         );
+  //       });
+  // }
 }
